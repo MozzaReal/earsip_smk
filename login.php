@@ -2,34 +2,101 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - E-Arsip SMK YMIK</title>
     <style>
-        * { box-sizing: border-box; font-family: Arial, sans-serif; }
-        body { background-color: #eef2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); width: 320px; }
-        .card h2 { text-align: center; margin-top: 0; color: #333; margin-bottom: 20px; }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; color: #555; font-size: 14px; }
-        .form-group input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-        button { width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 4px; font-size: 16px; cursor: pointer; font-weight: bold; }
-        button:hover { background-color: #218838; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e8f5e9; /* Hijau sangat muda untuk background */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .login-container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 350px;
+            text-align: center;
+            border-top: 5px solid #2e7d32; /* Garis hijau tegas di atas */
+        }
+        .login-container h2 {
+            color: #2e7d32; /* Hijau gelap SMK */
+            margin-bottom: 5px;
+        }
+        .login-container p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+            font-size: 15px;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: #2e7d32;
+        }
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .btn-login:hover {
+            background-color: #1b5e20;
+        }
+        .alert {
+            color: #d32f2f;
+            background-color: #ffebee;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
     </style>
 </head>
 <body>
 
-    <div class="card">
-        <h2>Login E-Arsip</h2>
+    <div class="login-container">
+        <h2>E-Arsip SMK YMIK</h2>
+        <p>Silakan login untuk mengakses sistem</p>
+
+        <?php 
+        if(isset($_GET['pesan'])){
+            if($_GET['pesan'] == "gagal"){
+                echo "<div class='alert'>Login gagal! Username atau password salah.</div>";
+            }else if($_GET['pesan'] == "belum_login"){
+                echo "<div class='alert'>Anda harus login untuk mengakses halaman.</div>";
+            }
+        }
+        ?>
+
         <form action="proses_login.php" method="POST">
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" required placeholder="Masukkan username" autocomplete="off">
+            <div class="input-group">
+                <input type="text" name="username" placeholder="Username" required>
             </div>
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required placeholder="Masukkan password">
+            <div class="input-group">
+                <input type="password" name="password" placeholder="Password" required>
             </div>
-            <button type="submit">Masuk</button>
+            <button type="submit" class="btn-login">LOGIN</button>
         </form>
     </div>
 
