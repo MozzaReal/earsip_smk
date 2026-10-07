@@ -17,7 +17,7 @@ if($_SESSION['level_user']==""){
             display: flex;
             height: 100vh;
         }
-        /* Sidebar Kiri */
+        
         .sidebar {
             width: 250px;
             background-color: #ffffff;
@@ -60,7 +60,7 @@ if($_SESSION['level_user']==""){
             border-left-color: #d32f2f;
         }
         
-        /* Konten Kanan */
+        
         .main-content {
             flex: 1;
             display: flex;

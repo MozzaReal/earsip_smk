@@ -6,7 +6,7 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #e8f5e9; /* Hijau sangat muda untuk background */
+            background-color: #e8f5e9; 
             display: flex;
             justify-content: center;
             align-items: center;
@@ -21,10 +21,10 @@
             width: 100%;
             max-width: 350px;
             text-align: center;
-            border-top: 5px solid #2e7d32; /* Garis hijau tegas di atas */
+            border-top: 5px solid #2e7d32; 
         }
         .login-container h2 {
-            color: #2e7d32; /* Hijau gelap SMK */
+            color: #2e7d32; 
             margin-bottom: 5px;
         }
         .login-container p {
