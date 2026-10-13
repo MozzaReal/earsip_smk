@@ -172,7 +172,7 @@ $d = mysqli_fetch_array($query);
                 <li><a href="cetak_surat.php">Cetak Laporan</a></li>
             <?php } else if($_SESSION['level_user'] == 'Kepala TU'){ ?>
                 <li><a href="surat_masuk.php">Data Surat Masuk</a></li>
-                <li><a href="surat_keluar.php" class="active">Data Surat Keluar</a></li>
+                <li><a href="surat_keluar.php">Data Surat Keluar</a></li>
                 <li><a href="cetak_surat.php">Cetak Laporan</a></li>
             <?php } ?>
             <li><a href="logout.php" class="logout-btn">Logout</a></li>
@@ -205,10 +205,6 @@ $d = mysqli_fetch_array($query);
                     <div class="form-group">
                         <label>Perihal</label>
                         <textarea name="perihal" rows="3" required><?php echo htmlspecialchars($d['perihal']); ?></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label>Isi Surat Teks (Opsional)</label>
-                        <textarea name="isi_surat_teks" rows="3"><?php echo htmlspecialchars($d['isi_surat_teks']); ?></textarea>
                     </div>
                     <div class="form-group">
                         <label>File Scan (Biarkan kosong jika tidak ingin mengubah file)</label>
