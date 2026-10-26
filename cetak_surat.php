@@ -13,19 +13,28 @@ if($_SESSION['level_user'] == ""){
     <meta charset="UTF-8">
     <title>Cetak Laporan - E-Arsip SMK YMIK</title>
     <style>
+        * { box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             background-color: #f4f7f6;
             display: flex;
             height: 100vh;
+            overflow: hidden;
         }
+
+        /* Sidebar Styling (Buka-Tutup) */
         .sidebar {
             width: 250px;
             background-color: #ffffff;
             box-shadow: 2px 0 5px rgba(0,0,0,0.05);
             display: flex;
             flex-direction: column;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        .sidebar.collapsed {
+            margin-left: -250px;
         }
         .sidebar-header {
             background-color: #2e7d32;
@@ -34,6 +43,17 @@ if($_SESSION['level_user'] == ""){
             text-align: center;
             font-size: 20px;
             font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            display: none;
         }
         .menu-list {
             list-style: none;
@@ -57,30 +77,56 @@ if($_SESSION['level_user'] == ""){
         .menu-list li a.logout-btn { color: #d32f2f; }
         .menu-list li a.logout-btn:hover { background-color: #ffebee; border-left-color: #d32f2f; }
 
+        /* Main Content */
         .main-content {
             flex: 1;
             display: flex;
             flex-direction: column;
             overflow-y: auto;
         }
+
+        /* Topbar */
         .topbar {
             background-color: #ffffff;
             padding: 15px 30px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
             align-items: center;
         }
-        .content-area { padding: 30px; }
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .toggle-btn {
+            background: none;
+            border: none;
+            color: #2e7d32;
+            font-size: 22px;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+        }
+        
+        /* Konten diatur ke tengah secara horizontal */
+        .content-area { 
+            padding: 30px; 
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
 
+        /* Form Styling */
         .card-form {
             background-color: #ffffff;
             padding: 25px 30px;
             border-radius: 8px;
             border-top: 5px solid #2e7d32;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            width: 100%;
             max-width: 600px;
-            margin-bottom: 20px;
         }
         .card-form h3 {
             color: #2e7d32;
@@ -107,9 +153,8 @@ if($_SESSION['level_user'] == ""){
             border-radius: 5px;
             font-size: 14px;
             font-family: inherit;
-            box-sizing: border-box;
         }
-        .btn-submit {
+        .btn-print {
             background-color: #2e7d32;
             color: white;
             padding: 10px 20px;
@@ -120,14 +165,15 @@ if($_SESSION['level_user'] == ""){
             cursor: pointer;
             transition: 0.3s;
         }
-        .btn-submit:hover { background-color: #1b5e20; }
+        .btn-print:hover { background-color: #1b5e20; }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
+    <div class="sidebar collapsed" id="sidebar">
         <div class="sidebar-header">
-            E-Arsip YMIK
+            <span>E-Arsip YMIK</span>
+            <button class="close-btn" onclick="toggleSidebar()">✕</button>
         </div>
         <ul class="menu-list">
             <li><a href="dashboard.php">Dashboard</a></li>
@@ -147,15 +193,21 @@ if($_SESSION['level_user'] == ""){
 
     <div class="main-content">
         <div class="topbar">
-            <span>Login sebagai: <b><?php echo $_SESSION['username'] ?? 'Admin'; ?></b></span>
+            <div class="topbar-left">
+                <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+                <span>Login sebagai: <b><?php echo $_SESSION['username'] ?? 'Admin'; ?></b></span>
+            </div>
+            <div>
+                <span style="font-size: 14px; color: #555;">E-Arsip SMK YMIK</span>
+            </div>
         </div>
-        
+
         <div class="content-area">
             <div class="card-form">
-                <h3>Cetak Laporan Rekapitulasi Arsip</h3>
+                <h3>Cetak Laporan Rekapitulasi Surat</h3>
                 <form action="cetak_laporan_proses.php" method="POST" target="_blank">
                     <div class="form-group">
-                        <label>Jenis Laporan</label>
+                        <label>Jenis Laporan Surat</label>
                         <select name="jenis_surat" required>
                             <option value="masuk">Laporan Surat Masuk</option>
                             <option value="keluar">Laporan Surat Keluar</option>
@@ -169,13 +221,18 @@ if($_SESSION['level_user'] == ""){
                         <label>Sampai Tanggal</label>
                         <input type="date" name="tgl_akhir" required>
                     </div>
-                    <div style="margin-top: 20px;">
-                        <button type="submit" name="cetak" class="btn-submit">🖨️ Cetak Laporan Rekap</button>
-                    </div>
+                    <button type="submit" class="btn-print">Cetak Laporan PDF</button>
                 </form>
             </div>
         </div>
     </div>
+
+    <script>
+        function toggleSidebar() {
+            var sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+        }
+    </script>
 
 </body>
 </html>

@@ -1,7 +1,9 @@
 <?php
 session_start();
-if($_SESSION['level_user'] != 'Admin TU'){
-    echo "<script>alert('Akses Ditolak! Anda bukan Admin TU.'); window.location='surat_masuk.php';</script>";
+include 'koneksi.php';
+
+if($_SESSION['level_user'] == ""){
+    header("location:login.php?pesan=belum_login");
     exit();
 }
 ?>
@@ -11,19 +13,28 @@ if($_SESSION['level_user'] != 'Admin TU'){
     <meta charset="UTF-8">
     <title>Tambah Surat Masuk - E-Arsip SMK YMIK</title>
     <style>
+        * { box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             background-color: #f4f7f6;
             display: flex;
             height: 100vh;
+            overflow: hidden;
         }
+
+        /* Sidebar Styling (Buka-Tutup) */
         .sidebar {
             width: 250px;
             background-color: #ffffff;
             box-shadow: 2px 0 5px rgba(0,0,0,0.05);
             display: flex;
             flex-direction: column;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        .sidebar.collapsed {
+            margin-left: -250px;
         }
         .sidebar-header {
             background-color: #2e7d32;
@@ -32,6 +43,17 @@ if($_SESSION['level_user'] != 'Admin TU'){
             text-align: center;
             font-size: 20px;
             font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            display: none;
         }
         .menu-list {
             list-style: none;
@@ -52,111 +74,154 @@ if($_SESSION['level_user'] != 'Admin TU'){
             color: #2e7d32;
             font-weight: bold;
         }
-        .menu-list li a.logout-btn {
-            color: #d32f2f;
-        }
+        .menu-list li a.logout-btn { color: #d32f2f; }
+        .menu-list li a.logout-btn:hover { background-color: #ffebee; border-left-color: #d32f2f; }
+
+        /* Main Content */
         .main-content {
             flex: 1;
             display: flex;
             flex-direction: column;
             overflow-y: auto;
         }
+
+        /* Topbar */
         .topbar {
             background-color: #ffffff;
             padding: 15px 30px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
+            align-items: center;
         }
-        .content-area {
-            padding: 30px;
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
         }
+        .toggle-btn {
+            background: none;
+            border: none;
+            color: #2e7d32;
+            font-size: 22px;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
+            align-items: center;
+        }
+        .content-area { padding: 30px; }
+
+        /* Card Form (Posisi di Tengah dengan margin: 0 auto;) */
         .card-form {
             background-color: #ffffff;
-            padding: 30px;
+            padding: 25px 30px;
             border-radius: 8px;
             border-top: 5px solid #2e7d32;
             box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            max-width: 600px;
+            max-width: 700px;
+            margin: 0 auto;
         }
         .card-form h3 {
             color: #2e7d32;
             margin-top: 0;
             margin-bottom: 20px;
+            border-bottom: 2px solid #e8f5e9;
+            padding-bottom: 10px;
         }
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 18px;
         }
         .form-group label {
             display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
+            font-weight: 600;
+            font-size: 14px;
             color: #333;
-            font-size: 14px;
+            margin-bottom: 6px;
         }
-        .form-group input, .form-group textarea {
+        .form-group input[type="text"],
+        .form-group input[type="date"],
+        .form-group textarea,
+        .form-group input[type="file"] {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
+            padding: 10px 12px;
+            border: 1px solid #cccccc;
             border-radius: 5px;
-            box-sizing: border-box;
             font-size: 14px;
+            font-family: inherit;
+            box-sizing: border-box;
         }
         .form-group input:focus, .form-group textarea:focus {
-            outline: none;
             border-color: #2e7d32;
+            outline: none;
         }
         .btn-submit {
             background-color: #2e7d32;
             color: white;
-            padding: 12px 20px;
+            padding: 10px 20px;
             border: none;
             border-radius: 5px;
             font-weight: bold;
+            font-size: 14px;
             cursor: pointer;
-            font-size: 15px;
+            transition: 0.3s;
         }
-        .btn-submit:hover {
-            background-color: #1b5e20;
-        }
+        .btn-submit:hover { background-color: #1b5e20; }
         .btn-back {
-            display: inline-block;
-            margin-bottom: 15px;
-            color: #2e7d32;
+            background-color: #757575;
+            color: white;
+            padding: 10px 20px;
             text-decoration: none;
+            border-radius: 5px;
             font-weight: bold;
+            font-size: 14px;
+            display: inline-block;
+            margin-left: 10px;
+            transition: 0.3s;
         }
+        .btn-back:hover { background-color: #616161; }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
+    <div class="sidebar collapsed" id="sidebar">
         <div class="sidebar-header">
-            E-Arsip YMIK
+            <span>E-Arsip YMIK</span>
+            <button class="close-btn" onclick="toggleSidebar()">✕</button>
         </div>
         <ul class="menu-list">
             <li><a href="dashboard.php">Dashboard</a></li>
-            <li><a href="surat_masuk.php" class="active">Kelola Surat Masuk</a></li>
-            <li><a href="surat_keluar.php">Kelola Surat Keluar</a></li>
-            <li><a href="buat_surat.php">Membuat Surat Keluar</a></li>
-            <li><a href="cetak_surat.php">Cetak Laporan</a></li>
+            <?php if($_SESSION['level_user'] == 'Admin TU'){ ?>
+                <li><a href="surat_masuk.php" class="active">Kelola Surat Masuk</a></li>
+                <li><a href="surat_keluar.php">Kelola Surat Keluar</a></li>
+                <li><a href="buat_surat.php">Membuat Surat Keluar</a></li>
+                <li><a href="cetak_surat.php">Cetak Laporan</a></li>
+            <?php } else if($_SESSION['level_user'] == 'Kepala TU'){ ?>
+                <li><a href="surat_masuk.php" class="active">Data Surat Masuk</a></li>
+                <li><a href="surat_keluar.php">Data Surat Keluar</a></li>
+                <li><a href="cetak_surat.php">Cetak Laporan</a></li>
+            <?php } ?>
             <li><a href="logout.php" class="logout-btn">Logout</a></li>
         </ul>
     </div>
 
     <div class="main-content">
         <div class="topbar">
-            <span>Login sebagai: <b><?php echo $_SESSION['username']; ?></b></span>
+            <div class="topbar-left">
+                <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+                <span>Login sebagai: <b><?php echo $_SESSION['username'] ?? 'Admin'; ?></b></span>
+            </div>
+            <div>
+                <span style="font-size: 14px; color: #555;">E-Arsip SMK YMIK</span>
+            </div>
         </div>
-        
+
         <div class="content-area">
-            <a href="surat_masuk.php" class="btn-back">&laquo; Kembali ke Data Surat Masuk</a>
             <div class="card-form">
                 <h3>Tambah Surat Masuk</h3>
                 <form action="proses_tambah_surat_masuk.php" method="POST" enctype="multipart/form-data">
                     <div class="form-group">
                         <label>No Surat</label>
-                        <input type="text" name="no_surat" required>
+                        <input type="text" name="no_surat" placeholder="Masukkan nomor surat..." required>
                     </div>
                     <div class="form-group">
                         <label>Tanggal Diterima</label>
@@ -168,21 +233,31 @@ if($_SESSION['level_user'] != 'Admin TU'){
                     </div>
                     <div class="form-group">
                         <label>Asal Instansi</label>
-                        <input type="text" name="asal_instansi" required>
+                        <input type="text" name="asal_instansi" placeholder="Masukkan asal instansi..." required>
                     </div>
                     <div class="form-group">
                         <label>Perihal</label>
-                        <textarea name="perihal" rows="4" required></textarea>
+                        <textarea name="perihal" rows="3" placeholder="Masukkan perihal surat..." required></textarea>
                     </div>
                     <div class="form-group">
-                        <label>Upload File Scan (PDF/JPG/PNG max 5MB)</label>
-                        <input type="file" name="file_scan" accept=".pdf, .jpg, .jpeg, .png" required>
+                        <label>File Scan (PDF/Gambar)</label>
+                        <input type="file" name="file_scan" accept=".pdf,.jpg,.jpeg,.png" required>
                     </div>
-                    <button type="submit" class="btn-submit">Simpan Data Surat</button>
+                    <div style="margin-top: 20px;">
+                        <button type="submit" name="simpan" class="btn-submit">Simpan Data</button>
+                        <a href="surat_masuk.php" class="btn-back">Kembali</a>
+                    </div>
                 </form>
             </div>
         </div>
     </div>
+
+    <script>
+        function toggleSidebar() {
+            var sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+        }
+    </script>
 
 </body>
 </html>

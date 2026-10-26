@@ -23,19 +23,30 @@ $total_keluar = $d_keluar['total'] ?? 0;
     <meta charset="UTF-8">
     <title>Dashboard - E-Arsip SMK YMIK</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             background-color: #f4f7f6;
             display: flex;
             height: 100vh;
+            overflow: hidden;
         }
+
+        /* Sidebar Styling (Hijau Putih Khas) */
         .sidebar {
             width: 250px;
             background-color: #ffffff;
             box-shadow: 2px 0 5px rgba(0,0,0,0.05);
             display: flex;
             flex-direction: column;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+        .sidebar.collapsed {
+            margin-left: -250px;
         }
         .sidebar-header {
             background-color: #2e7d32;
@@ -44,6 +55,17 @@ $total_keluar = $d_keluar['total'] ?? 0;
             text-align: center;
             font-size: 20px;
             font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            display: none;
         }
         .menu-list {
             list-style: none;
@@ -67,85 +89,94 @@ $total_keluar = $d_keluar['total'] ?? 0;
         .menu-list li a.logout-btn { color: #d32f2f; }
         .menu-list li a.logout-btn:hover { background-color: #ffebee; border-left-color: #d32f2f; }
 
+        /* Main Content */
         .main-content {
             flex: 1;
             display: flex;
             flex-direction: column;
             overflow-y: auto;
         }
+
+        /* Topbar */
         .topbar {
             background-color: #ffffff;
             padding: 15px 30px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             display: flex;
-            justify-content: flex-end;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .toggle-btn {
+            background: none;
+            border: none;
+            color: #2e7d32;
+            font-size: 22px;
+            cursor: pointer;
+            padding: 0;
+            display: flex;
             align-items: center;
         }
         .content-area { padding: 30px; }
 
+        /* Welcome Card: Latar Hijau Tua dengan Teks Putih */
         .welcome-card {
-            background-color: #ffffff;
-            padding: 20px 25px;
+            background-color: #2e7d32;
+            color: #ffffff;
+            padding: 25px;
             border-radius: 8px;
-            border-top: 5px solid #2e7d32;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 10px rgba(46, 125, 50, 0.2);
             margin-bottom: 25px;
         }
         .welcome-card h2 {
-            color: #2e7d32;
-            margin-top: 0;
-            margin-bottom: 10px;
+            margin: 0 0 8px 0;
+            color: #ffffff;
+            font-size: 24px;
         }
-        .badge-role {
-            background-color: #2e7d32;
-            color: white;
-            padding: 3px 10px;
-            border-radius: 4px;
-            font-size: 13px;
+        .welcome-card p {
+            margin: 0;
+            color: #e8f5e9;
+            font-size: 14px;
         }
 
-        /* Container untuk Kartu Statistik */
+        /* Stats Cards dengan Warna Solid */
         .stats-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
         }
         .stat-card {
-            background: #ffffff;
-            padding: 20px;
+            padding: 22px;
             border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-left: 5px solid #2e7d32;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            color: white;
         }
-        .stat-card.blue { border-left-color: #0288d1; }
-        .stat-card.orange { border-left-color: #f57c00; }
+        .stat-card.blue { background-color: #0288d1; }
+        .stat-card.green { background-color: #388e3c; }
 
-        .stat-info h4 {
-            margin: 0;
-            color: #666;
-            font-size: 14px;
+        .stat-card h4 {
+            margin: 0 0 10px 0;
+            font-size: 15px;
             font-weight: normal;
+            opacity: 0.9;
         }
-        .stat-info div {
-            font-size: 28px;
+        .stat-card .val {
+            font-size: 30px;
             font-weight: bold;
-            color: #333;
-            margin-top: 5px;
-        }
-        .stat-icon {
-            font-size: 35px;
-            opacity: 0.8;
         }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
+    <!-- Sidebar Menu -->
+    <div class="sidebar collapsed" id="sidebar">
         <div class="sidebar-header">
-            E-Arsip YMIK
+            <span>E-Arsip YMIK</span>
+            <button class="close-btn" onclick="toggleSidebar()">✕</button>
         </div>
         <ul class="menu-list">
             <li><a href="dashboard.php" class="active">Dashboard</a></li>
@@ -163,40 +194,47 @@ $total_keluar = $d_keluar['total'] ?? 0;
         </ul>
     </div>
 
+    <!-- Main Content Area -->
     <div class="main-content">
         <div class="topbar">
-            <span>Login sebagai: <b><?php echo $_SESSION['username'] ?? 'Admin'; ?></b></span>
+            <div class="topbar-left">
+                <button class="toggle-btn" onclick="toggleSidebar()">☰</button>
+                <span>Login sebagai: <b><?php echo $_SESSION['username'] ?? 'Admin'; ?></b></span>
+            </div>
+            <div>
+                <span style="font-size: 14px; color: #555;">E-Arsip SMK YMIK</span>
+            </div>
         </div>
         
         <div class="content-area">
-            <!-- Kartu Ucapan Selamat Datang -->
+            <!-- Welcome Banner (Latar Hijau Tulisan Putih Jelas) -->
             <div class="welcome-card">
-                <h2>Selamat Datang di Sistem Informasi Kearsipan</h2>
-                <p>Halo <b><?php echo $_SESSION['username'] ?? 'User'; ?></b>, Anda memiliki akses sebagai <span class="badge-role"><?php echo $_SESSION['level_user']; ?></span>.</p>
-                <p style="margin-bottom: 0; color: #666;">Gunakan menu di sebelah kiri untuk mengelola data surat SMK YMIK.</p>
+                <h2>Selamat Datang, <?php echo $_SESSION['username'] ?? 'User'; ?>!</h2>
+                <p>Sistem Informasi Pengelolaan Data Arsip Surat Masuk & Surat Keluar. Pilih menu di samping untuk mulai mengelola data.</p>
             </div>
 
-            <!-- Ringkasan Statistik Data -->
+            <!-- Ringkasan Statistik Berwarna -->
             <div class="stats-grid">
                 <div class="stat-card blue">
-                    <div class="stat-info">
-                        <h4>Total Surat Masuk</h4>
-                        <div><?php echo $total_masuk; ?></div>
-                    </div>
-                    <div class="stat-icon">📥</div>
+                    <h4>Total Surat Masuk</h4>
+                    <div class="val"><?php echo $total_masuk; ?> Surat</div>
                 </div>
 
-                <div class="stat-card orange">
-                    <div class="stat-info">
-                        <h4>Total Surat Keluar</h4>
-                        <div><?php echo $total_keluar; ?></div>
-                    </div>
-                    <div class="stat-icon">📤</div>
+                <div class="stat-card green">
+                    <h4>Total Surat Keluar</h4>
+                    <div class="val"><?php echo $total_keluar; ?> Surat</div>
                 </div>
             </div>
-
         </div>
     </div>
+
+    <!-- Script JavaScript Buka-Tutup Sidebar -->
+    <script>
+        function toggleSidebar() {
+            var sidebar = document.getElementById('sidebar');
+            sidebar.classList.toggle('collapsed');
+        }
+    </script>
 
 </body>
 </html>
